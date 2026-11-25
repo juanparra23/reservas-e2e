@@ -1,0 +1,10 @@
+.gradle/
+.gradle-e2e/
+build/
+.idea/
+out/
+target/
+*.iml
+*.log
+.env
+serenity.properties.local

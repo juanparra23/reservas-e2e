@@ -1,0 +1,75 @@
+// Plataforma de Reservas - Automatización E2E
+// Estructura generada con el scaffold Screenplay Architecture.
+plugins {
+    id 'io.github.jumosqu12.screenplayarchitecture' version '2.0.1'
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+    id 'net.serenity-bdd.serenity-gradle-plugin' version '4.1.3'
+}
+
+group = 'co.com.eap05.certificacion'
+version = '1.0.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    serenityVersion = '4.1.3'
+    junitVersion = '4.13.2'
+    datafakerVersion = '2.1.0'
+}
+
+dependencies {
+    implementation "net.serenity-bdd:serenity-core:${serenityVersion}"
+    implementation "net.serenity-bdd:serenity-junit:${serenityVersion}"
+    implementation "net.serenity-bdd:serenity-screenplay:${serenityVersion}"
+    implementation "net.serenity-bdd:serenity-screenplay-webdriver:${serenityVersion}"
+    implementation "net.serenity-bdd:serenity-cucumber:${serenityVersion}"
+    implementation "net.serenity-bdd:serenity-ensure:${serenityVersion}"
+    implementation "net.datafaker:datafaker:${datafakerVersion}"
+    implementation 'org.slf4j:slf4j-simple:2.0.5'
+
+    testImplementation "junit:junit:${junitVersion}"
+    testImplementation 'io.github.bonigarcia:webdrivermanager:5.4.1'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+def runner = project.findProperty('runner') ?: 'ReservasE2ERunner'
+
+tasks.named('test') {
+    jvmArgs '-Dfile.encoding=UTF-8'
+    System.properties.each { key, value ->
+        def property = key.toString()
+        if (property.startsWith('reservas.') || property.startsWith('cucumber.')
+                || property.startsWith('webdriver.') || property.startsWith('serenity.')
+                || property == 'headless.mode' || property == 'environment') {
+            systemProperty property, value
+        }
+    }
+    filter {
+        includeTestsMatching "*.${runner}"
+    }
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        showStandardStreams = false
+    }
+    outputs.upToDateWhen { false }
+    finalizedBy 'aggregate'
+}
+
+gradle.startParameter.continueOnFailure = true
+
+serenity {
+    generateOutcomes = true
+}
+
